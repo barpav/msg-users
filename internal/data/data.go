@@ -26,7 +26,9 @@ func (s *Storage) connectToDatabase() (err error) {
 
 	if err == nil {
 		err = s.db.Ping()
-	} else {
+	}
+
+	if err == nil {
 		log.Printf("Successfully connected to DB at %s", dbAdress)
 	}
 
