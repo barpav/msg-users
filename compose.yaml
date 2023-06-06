@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/service/Dockerfile
-    image: barpav/msg-users:v1
+    image: ghcr.io/barpav/msg-users:v1
     container_name: msg-users-v1
     environment:
       - MSG_STORAGE_HOST=storage-users-v1
@@ -17,7 +17,7 @@ services:
   storage-users-v1:
     build:
       context: docker/storage
-    image: barpav/msg-storage-users:v1
+    image: ghcr.io/barpav/msg-storage-users:v1
     container_name: msg-storage-users-v1
     environment:
       - POSTGRES_PASSWORD=postgres

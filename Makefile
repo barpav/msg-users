@@ -6,7 +6,7 @@ down:
 	sudo docker ps
 
 run-s:
-	sudo docker run -p5432:5432 --name msg-storage-users-v1 -e POSTGRES_PASSWORD=postgres -d barpav/msg-storage-users:v1
+	sudo docker run -p5432:5432 --name msg-storage-users-v1 -e POSTGRES_PASSWORD=postgres -d ghcr.io/barpav/msg-storage-users:v1
 	sudo docker ps
 stop-s:
 	sudo docker stop msg-storage-users-v1
@@ -14,22 +14,22 @@ stop-s:
 	sudo docker ps
 
 build-u:
-	sudo docker image rm -f barpav/msg-users:v1
-	sudo docker build -t barpav/msg-users:v1 -f docker/service/Dockerfile .
+	sudo docker image rm -f ghcr.io/barpav/msg-users:v1
+	sudo docker build -t ghcr.io/barpav/msg-users:v1 -f docker/service/Dockerfile .
 	sudo docker image ls
 build-s:
-	sudo docker image rm -f barpav/msg-storage-users:v1
-	sudo docker build -t barpav/msg-storage-users:v1 -f docker/storage/Dockerfile ./docker/storage
+	sudo docker image rm -f ghcr.io/barpav/msg-storage-users:v1
+	sudo docker build -t ghcr.io/barpav/msg-storage-users:v1 -f docker/storage/Dockerfile ./docker/storage
 	sudo docker image ls
 
 clear-u:
-	sudo docker image rm -f barpav/msg-users:v1
+	sudo docker image rm -f ghcr.io/barpav/msg-users:v1
 	sudo docker image ls
 clear-s:
-	sudo docker image rm -f barpav/msg-storage-users:v1
+	sudo docker image rm -f ghcr.io/barpav/msg-storage-users:v1
 	sudo docker image ls
 clear:
-	sudo docker image rm -f barpav/msg-users:v1 barpav/msg-storage-users:v1
+	sudo docker image rm -f ghcr.io/barpav/msg-users:v1 ghcr.io/barpav/msg-storage-users:v1
 	sudo docker image ls
 
 exec-u:
@@ -38,9 +38,9 @@ exec-s:
 	sudo docker exec -it -u postgres msg-storage-users-v1 bash
 
 push-u:
-	sudo docker push barpav/msg-users:v1
+	sudo docker push ghcr.io/barpav/msg-users:v1
 push-s:
-	sudo docker push barpav/msg-storage-users:v1
+	sudo docker push ghcr.io/barpav/msg-storage-users:v1
 push:
-	sudo docker push barpav/msg-users:v1
-	sudo docker push barpav/msg-storage-users:v1
+	sudo docker push ghcr.io/barpav/msg-users:v1
+	sudo docker push ghcr.io/barpav/msg-storage-users:v1
