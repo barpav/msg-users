@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/barpav/msg-users/internal/api"
+	"github.com/barpav/msg-users/internal/rest"
 )
 
 func main() {
-	service := api.Service{}
+	service := rest.Service{}
 
 	err := service.Init()
 
