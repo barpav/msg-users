@@ -2,48 +2,38 @@ package rest
 
 import (
 	"context"
-	"errors"
+	"log"
 	"net/http"
 
 	"github.com/barpav/msg-users/internal/data"
 )
 
 type Service struct {
-	Shutdown chan error
+	Shutdown chan struct{}
 	server   *http.Server
 	storage  *data.Storage
 }
 
-func (s *Service) Start() error {
-	s.storage = &data.Storage{}
-	err := s.storage.Open()
-
-	if err != nil {
-		return err
-	}
+func (s *Service) Start(storage *data.Storage) error {
+	s.storage = storage
 
 	s.server = &http.Server{
 		Addr:    ":8080",
 		Handler: s,
 	}
 
-	s.Shutdown = make(chan error, 1)
+	s.Shutdown = make(chan struct{}, 1)
 
 	go func() {
-		err := s.server.ListenAndServe()
-
-		if !errors.Is(err, http.ErrServerClosed) {
-			s.Shutdown <- err
-		}
+		log.Println(s.server.ListenAndServe())
+		s.Shutdown <- struct{}{}
 	}()
 
 	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) (err error) {
-	err = errors.Join(err, s.server.Shutdown(ctx))
-	err = errors.Join(err, s.storage.Close(ctx))
-	return err
+	return s.server.Shutdown(ctx)
 }
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
