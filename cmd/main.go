@@ -49,15 +49,15 @@ func (m *microservice) launch() (err error) {
 		return err
 	}
 
-	m.api.public = &rest.Service{}
-	err = m.api.public.Start(m.storage)
+	m.api.private = &grpc.Service{}
+	err = m.api.private.Start(m.storage)
 
 	if err != nil {
 		return err
 	}
 
-	m.api.private = &grpc.Service{}
-	err = m.api.private.Start(m.storage)
+	m.api.public = &rest.Service{}
+	err = m.api.public.Start(m.storage)
 
 	return err
 }
