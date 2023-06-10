@@ -11,12 +11,10 @@ type Service struct {
 	storage  *data.Storage
 }
 
-func (s *Service) Start(storage *data.Storage) error {
+func (s *Service) Start(storage *data.Storage) {
 	s.storage = storage
 
 	s.Shutdown = make(chan struct{}, 1)
-
-	return nil
 }
 
 func (s *Service) Stop(ctx context.Context) (err error) {
