@@ -12,6 +12,7 @@ import (
 	"github.com/barpav/msg-users/internal/data"
 )
 
+// https://barpav.github.io/msg-api-spec/#/users/post_users
 func (s *Service) registerNewUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Header.Get("Content-Type") {
 	case "application/vnd.newUser.v1+json":
@@ -38,7 +39,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 		Password: userInfo.Password,
 	}
 
-	err, exists := s.storage.Register(&user, r.Context())
+	err, exists := user.Create(s.storage, r.Context())
 
 	if exists {
 		w.WriteHeader(http.StatusConflict)

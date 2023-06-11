@@ -34,6 +34,7 @@ func (s *Service) Stop(ctx context.Context) (err error) {
 	return s.server.Shutdown(ctx)
 }
 
+// https://barpav.github.io/msg-api-spec/#/users
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// URL handling is reverse proxy's concern
 	switch r.Method {

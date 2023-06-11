@@ -13,11 +13,7 @@ import (
 type Storage struct {
 	db      *sql.DB
 	cfg     *Config
-	queries *queries
-}
-
-type queries struct {
-	register *sql.Stmt
+	queries map[string]*sql.Stmt
 }
 
 func (s *Storage) Open() (err error) {
@@ -37,7 +33,10 @@ func (s *Storage) Close(ctx context.Context) (err error) {
 	closed := make(chan struct{}, 1)
 
 	go func() {
-		err = errors.Join(err, s.queries.register.Close())
+		for _, query := range s.queries {
+			err = errors.Join(err, query.Close())
+		}
+
 		err = errors.Join(err, s.db.Close())
 
 		closed <- struct{}{}
@@ -68,9 +67,15 @@ func (s *Storage) connectToDatabase() (err error) {
 }
 
 func (s *Storage) prepareQueries() (err error) {
-	s.queries = &queries{}
+	s.queries = make(map[string]*sql.Stmt)
 
-	err = s.prepareRegisterQuery()
+	err = errors.Join(err, s.prepare(queryNewUserCreate, queryNewUserCreateName))
+	err = errors.Join(err, s.prepare(queryPasswordVerify, queryPasswordVerifyName))
 
+	return err
+}
+
+func (s *Storage) prepare(query, name string) (err error) {
+	s.queries[name], err = s.db.Prepare(query)
 	return err
 }
