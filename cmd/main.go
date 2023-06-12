@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/barpav/msg-users/internal/data"
-	"github.com/barpav/msg-users/internal/grpc"
+	"github.com/barpav/msg-users/internal/pb"
 	"github.com/barpav/msg-users/internal/rest"
 )
 
@@ -36,7 +36,7 @@ func main() {
 type microservice struct {
 	api struct {
 		public  *rest.Service // https://barpav.github.io/msg-api-spec/#/users
-		private *grpc.Service
+		private *pb.Service   // see users_service_go_grpc/users_service.proto
 	}
 	storage *data.Storage
 }
@@ -49,7 +49,7 @@ func (m *microservice) launch() (err error) {
 		return err
 	}
 
-	m.api.private = &grpc.Service{}
+	m.api.private = &pb.Service{}
 	m.api.private.Start(m.storage)
 
 	m.api.public = &rest.Service{}

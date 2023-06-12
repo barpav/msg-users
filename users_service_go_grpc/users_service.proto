@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package messenger;
+
+option go_package = "github.com/barpav/msg-users/users_service_go_grpc";
+
+service Users {
+    rpc Validate(Credentials) returns (ValidationResult);
+}
+
+message Credentials {
+    string id = 1;
+    string password = 2;
+}
+
+message ValidationResult {
+    CredentialsStatus status = 1;
+}
+
+enum CredentialsStatus {
+    UNSPECIFIED = 0;
+    VALID = 1;
+    NOT_VALID = 2;
+    ERROR = 3;
+}

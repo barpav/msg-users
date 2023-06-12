@@ -70,7 +70,7 @@ func (s *Storage) prepareQueries() (err error) {
 	s.queries = make(map[string]*sql.Stmt)
 
 	err = errors.Join(err, s.prepare(queryNewUserCreate, queryNewUserCreateName))
-	err = errors.Join(err, s.prepare(queryPasswordVerify, queryPasswordVerifyName))
+	err = errors.Join(err, s.prepare(queryPasswordIsValid, queryPasswordIsValidName))
 
 	return err
 }
