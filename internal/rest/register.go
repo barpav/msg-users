@@ -3,11 +3,13 @@ package rest
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"unicode"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/barpav/msg-users/internal/data"
 )
@@ -47,12 +49,14 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		log.Println(err.Error())
+		log.Err(err).Msg(fmt.Sprintf("User registration failed (issue: %s).", r.Header.Get("request-id")))
 
 		w.Header()["issue"] = []string{r.Header.Get("request-id")} // lowercase - non-canonical (vendor) header
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	log.Info().Msg(fmt.Sprintf("User '%s' successfully registered.", user.Id))
 
 	w.WriteHeader(http.StatusCreated)
 }
