@@ -2,8 +2,9 @@ package pb
 
 import (
 	"context"
-	"log"
 	"net"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/barpav/msg-users/internal/data"
 	usgrpc "github.com/barpav/msg-users/users_service_go_grpc"
@@ -33,7 +34,7 @@ func (s *Service) Start(storage *data.Storage) {
 		}
 
 		if err != nil {
-			log.Println(err)
+			log.Err(err).Msg("gRPC server crashed.")
 		}
 
 		s.Shutdown <- struct{}{}

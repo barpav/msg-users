@@ -2,8 +2,9 @@ package rest
 
 import (
 	"context"
-	"log"
 	"net/http"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/barpav/msg-users/internal/data"
 )
@@ -25,7 +26,12 @@ func (s *Service) Start(storage *data.Storage) {
 	s.Shutdown = make(chan struct{}, 1)
 
 	go func() {
-		log.Println(s.server.ListenAndServe())
+		err := s.server.ListenAndServe()
+
+		if err != http.ErrServerClosed {
+			log.Err(err).Msg("HTTP server crashed.")
+		}
+
 		s.Shutdown <- struct{}{}
 	}()
 }

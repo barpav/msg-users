@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/rs/zerolog/log"
+	"go.elastic.co/ecszerolog"
 
 	"github.com/barpav/msg-users/internal/data"
 	"github.com/barpav/msg-users/internal/pb"
@@ -15,21 +17,23 @@ import (
 )
 
 func main() {
+	log.Logger = ecszerolog.New(os.Stdout)
+
 	app := microservice{}
 	err := app.launch()
 
 	if err == nil {
-		log.Println("Microservice is up.")
+		log.Info().Msg("Microservice launched.")
 	} else {
-		log.Fatalf("Failed to launch microservice: %s", err)
+		log.Err(err).Msg("Failed to launch microservice")
 	}
 
 	err = app.serveAndShutdownGracefully()
 
 	if err == nil {
-		log.Println("Microservice stopped.")
+		log.Info().Msg("Microservice stopped.")
 	} else {
-		log.Printf("Failed to shutdown the microservice gracefully: %s", err)
+		log.Err(err).Msg("Failed to shutdown microservice gracefully.")
 	}
 }
 
@@ -68,7 +72,7 @@ func (m *microservice) serveAndShutdownGracefully() (err error) {
 	case <-m.api.private.Shutdown:
 	}
 
-	log.Println("Shutting down...")
+	log.Info().Msg("Shutting down...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

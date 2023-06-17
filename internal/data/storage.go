@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -60,7 +61,7 @@ func (s *Storage) connectToDatabase() (err error) {
 	}
 
 	if err == nil {
-		log.Printf("Successfully connected to DB at %s", dbAddress)
+		log.Info().Msg(fmt.Sprintf("Successfully connected to DB at %s", dbAddress))
 	}
 
 	return err
