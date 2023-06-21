@@ -26,6 +26,7 @@ func main() {
 		log.Info().Msg("Microservice launched.")
 	} else {
 		log.Err(err).Msg("Failed to launch microservice")
+		app.abort()
 	}
 
 	err = app.serveAndShutdownGracefully()
@@ -42,16 +43,16 @@ type microservice struct {
 		public  *rest.Service // https://barpav.github.io/msg-api-spec/#/users
 		private *pb.Service   // see users_service_go_grpc/users_service.proto
 	}
-	storage *data.Storage
+	storage  *data.Storage
+	shutdown chan os.Signal
 }
 
 func (m *microservice) launch() (err error) {
-	m.storage = &data.Storage{}
-	err = m.storage.Open()
+	m.shutdown = make(chan os.Signal, 2)
+	signal.Notify(m.shutdown, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
 
-	if err != nil {
-		return err
-	}
+	m.storage = &data.Storage{}
+	err = errors.Join(err, m.storage.Open())
 
 	m.api.private = &pb.Service{}
 	m.api.private.Start(m.storage)
@@ -62,12 +63,13 @@ func (m *microservice) launch() (err error) {
 	return err
 }
 
-func (m *microservice) serveAndShutdownGracefully() (err error) {
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGHUP)
+func (m *microservice) abort() {
+	m.shutdown <- syscall.SIGINT
+}
 
+func (m *microservice) serveAndShutdownGracefully() (err error) {
 	select {
-	case <-shutdown:
+	case <-m.shutdown:
 	case <-m.api.public.Shutdown:
 	case <-m.api.private.Shutdown:
 	}

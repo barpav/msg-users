@@ -20,6 +20,7 @@ type Service struct {
 }
 
 func (s *Service) Start(storage *data.Storage) {
+	s.server = grpc.NewServer()
 	s.storage = storage
 
 	s.Shutdown = make(chan struct{}, 1)
@@ -28,7 +29,6 @@ func (s *Service) Start(storage *data.Storage) {
 		lis, err := net.Listen("tcp", ":9000")
 
 		if err == nil {
-			s.server = grpc.NewServer()
 			usgrpc.RegisterUsersServer(s.server, s)
 			err = s.server.Serve(lis)
 		}
