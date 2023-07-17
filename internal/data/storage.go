@@ -14,7 +14,18 @@ import (
 type Storage struct {
 	db      *sql.DB
 	cfg     *Config
-	queries map[string]*sql.Stmt
+	queries map[query]*sql.Stmt
+}
+
+type query interface {
+	text() string
+}
+
+func queriesToPrepare() []query {
+	return []query{
+		queryValidateCredentials{},
+		queryCreateUser{},
+	}
 }
 
 func (s *Storage) Open() (err error) {
@@ -68,15 +79,16 @@ func (s *Storage) connectToDatabase() (err error) {
 }
 
 func (s *Storage) prepareQueries() (err error) {
-	s.queries = make(map[string]*sql.Stmt)
+	s.queries = make(map[query]*sql.Stmt)
 
-	err = errors.Join(err, s.prepare(queryCreateUser, queryCreateUserName))
-	err = errors.Join(err, s.prepare(queryValidateCredentials, queryValidateCredentialsName))
+	for _, q := range queriesToPrepare() {
+		err = errors.Join(err, s.prepare(q))
+	}
 
 	return err
 }
 
-func (s *Storage) prepare(query, name string) (err error) {
-	s.queries[name], err = s.db.Prepare(query)
+func (s *Storage) prepare(q query) (err error) {
+	s.queries[q], err = s.db.Prepare(q.text())
 	return err
 }
