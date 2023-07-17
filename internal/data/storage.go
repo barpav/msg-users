@@ -45,8 +45,8 @@ func (s *Storage) Close(ctx context.Context) (err error) {
 	closed := make(chan struct{}, 1)
 
 	go func() {
-		for _, query := range s.queries {
-			err = errors.Join(err, query.Close())
+		for _, stmt := range s.queries {
+			err = errors.Join(err, stmt.Close())
 		}
 
 		err = errors.Join(err, s.db.Close())
