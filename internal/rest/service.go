@@ -5,17 +5,19 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog/log"
-
-	"github.com/barpav/msg-users/internal/data"
 )
 
 type Service struct {
 	Shutdown chan struct{}
 	server   *http.Server
-	storage  *data.Storage
+	storage  Storage
 }
 
-func (s *Service) Start(storage *data.Storage) {
+type Storage interface {
+	CreateUser(ctx context.Context, id, name, password string) error
+}
+
+func (s *Service) Start(storage Storage) {
 	s.storage = storage
 
 	s.server = &http.Server{

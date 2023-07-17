@@ -70,8 +70,8 @@ func (s *Storage) connectToDatabase() (err error) {
 func (s *Storage) prepareQueries() (err error) {
 	s.queries = make(map[string]*sql.Stmt)
 
-	err = errors.Join(err, s.prepare(queryNewUserCreate, queryNewUserCreateName))
-	err = errors.Join(err, s.prepare(queryPasswordIsValid, queryPasswordIsValidName))
+	err = errors.Join(err, s.prepare(queryCreateUser, queryCreateUserName))
+	err = errors.Join(err, s.prepare(queryValidateCredentials, queryValidateCredentialsName))
 
 	return err
 }

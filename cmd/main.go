@@ -40,7 +40,7 @@ func main() {
 
 type microservice struct {
 	api struct {
-		public  *rest.Service // https://barpav.github.io/msg-api-spec/#/users
+		public  *rest.Service // specification: https://barpav.github.io/msg-api-spec/#/users
 		private *pb.Service   // see users_service_go_grpc/users_service.proto
 	}
 	storage  *data.Storage
