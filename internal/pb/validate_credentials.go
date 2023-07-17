@@ -6,15 +6,12 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/barpav/msg-users/internal/data"
 	usgrpc "github.com/barpav/msg-users/users_service_go_grpc"
 )
 
 func (s *Service) Validate(ctx context.Context, credentials *usgrpc.Credentials) (*usgrpc.ValidationResult, error) {
 	userId := credentials.GetId()
-
-	pass := data.Password(credentials.GetPassword())
-	ok, err := pass.IsValid(userId, s.storage, ctx)
+	ok, err := s.storage.ValidateCredentials(ctx, userId, credentials.GetPassword())
 
 	result := &usgrpc.ValidationResult{}
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/barpav/msg-users/internal/data"
 	usgrpc "github.com/barpav/msg-users/users_service_go_grpc"
 	"google.golang.org/grpc"
 )
@@ -14,12 +13,16 @@ import (
 type Service struct {
 	Shutdown chan struct{}
 	server   *grpc.Server
-	storage  *data.Storage
+	storage  Storage
 
 	usgrpc.UnimplementedUsersServer
 }
 
-func (s *Service) Start(storage *data.Storage) {
+type Storage interface {
+	ValidateCredentials(ctx context.Context, userId, password string) (valid bool, err error)
+}
+
+func (s *Service) Start(storage Storage) {
 	s.server = grpc.NewServer()
 	s.storage = storage
 
