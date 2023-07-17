@@ -8,20 +8,21 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-const (
-	queryCreateUserName = "CreateUser"
-	queryCreateUser     = `
+type queryCreateUser struct{}
+
+func (q queryCreateUser) text() string {
+	return `
 	INSERT INTO users (id, name, password)
 	VALUES ($1, $2, $3);
 	`
-)
+}
 
 type ErrUserAlreadyExists struct{}
 
 func (s Storage) CreateUser(ctx context.Context, id, name, password string) (err error) {
 	passwordSum := md5.Sum([]byte(password))
 
-	_, err = s.queries[queryCreateUserName].ExecContext(ctx, id, name, passwordSum[:])
+	_, err = s.queries[queryCreateUser{}].ExecContext(ctx, id, name, passwordSum[:])
 
 	if err != nil {
 		dbErr, ok := err.(*pgconn.PgError)
