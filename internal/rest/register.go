@@ -10,8 +10,6 @@ import (
 	"unicode"
 
 	"github.com/rs/zerolog/log"
-
-	"github.com/barpav/msg-users/internal/data"
 )
 
 // https://barpav.github.io/msg-api-spec/#/users/post_users
@@ -25,6 +23,11 @@ func (s *Service) registerNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type ErrUserAlreadyExists interface {
+	Error() string
+	ImplementsUserAlreadyExistsError()
+}
+
 func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 	userInfo := newUserV1{}
 	err := userInfo.deserialize(r.Body)
@@ -35,17 +38,13 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := data.NewUser{
-		Id:       userInfo.Id,
-		Name:     userInfo.Name,
-		Password: userInfo.Password,
-	}
+	err = s.storage.CreateUser(r.Context(), userInfo.Id, userInfo.Name, userInfo.Password)
 
-	err, exists := user.Create(s.storage, r.Context())
-
-	if exists {
-		w.WriteHeader(http.StatusConflict)
-		return
+	if err != nil {
+		if _, ok := err.(ErrUserAlreadyExists); ok {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
 	}
 
 	if err != nil {
@@ -56,7 +55,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info().Msg(fmt.Sprintf("User '%s' successfully registered.", user.Id))
+	log.Info().Msg(fmt.Sprintf("User '%s' successfully registered.", userInfo.Id))
 
 	w.WriteHeader(http.StatusCreated)
 }
