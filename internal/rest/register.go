@@ -45,9 +45,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusConflict)
 			return
 		}
-	}
 
-	if err != nil {
 		log.Err(err).Msg(fmt.Sprintf("User registration failed (issue: %s).", r.Header.Get("request-id")))
 
 		w.Header()["issue"] = []string{r.Header.Get("request-id")} // lowercase - non-canonical (vendor) header
