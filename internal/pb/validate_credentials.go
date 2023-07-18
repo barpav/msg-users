@@ -13,19 +13,16 @@ func (s *Service) Validate(ctx context.Context, credentials *usgrpc.Credentials)
 	userId := credentials.GetId()
 	ok, err := s.storage.ValidateCredentials(ctx, userId, credentials.GetPassword())
 
-	result := &usgrpc.ValidationResult{}
-
-	switch {
-	case err != nil:
-		result.Status = usgrpc.CredentialsStatus_ERROR
+	if err != nil {
 		log.Err(err).Msg(fmt.Sprintf("User '%s' credentials validation failed.", userId))
-	case ok:
-		result.Status = usgrpc.CredentialsStatus_VALID
+		return nil, fmt.Errorf("Credentials validation failed: %w", err)
+	}
+
+	if ok {
 		log.Info().Msg(fmt.Sprintf("User '%s' credentials validated (valid).", userId))
-	default:
-		result.Status = usgrpc.CredentialsStatus_NOT_VALID
+	} else {
 		log.Info().Msg(fmt.Sprintf("User '%s' credentials validated (not valid).", userId))
 	}
 
-	return result, err
+	return &usgrpc.ValidationResult{Valid: ok}, nil
 }
