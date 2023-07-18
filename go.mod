@@ -3,6 +3,7 @@ module github.com/barpav/msg-users
 go 1.20
 
 require (
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/rs/zerolog v1.29.1

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 )
 
@@ -22,7 +23,7 @@ func (s *Service) Start(storage Storage) {
 
 	s.server = &http.Server{
 		Addr:    ":8080",
-		Handler: s,
+		Handler: s.operations(),
 	}
 
 	s.Shutdown = make(chan struct{}, 1)
@@ -42,19 +43,17 @@ func (s *Service) Stop(ctx context.Context) (err error) {
 	return s.server.Shutdown(ctx)
 }
 
-// https://barpav.github.io/msg-api-spec/#/users
-func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// URL handling is reverse proxy's concern
-	switch r.Method {
-	case http.MethodPost:
-		s.registerNewUser(w, r)
-	case http.MethodGet:
-		s.getUserInfo(w, r)
-	case http.MethodPut:
-		s.editUserInfo(w, r)
-	case http.MethodDelete:
-		s.deleteUser(w, r)
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	}
+// Specification: https://barpav.github.io/msg-api-spec/#/users
+func (s *Service) operations() *chi.Mux {
+	ops := chi.NewRouter()
+
+	ops.Use(s.traceInternalServerError)
+
+	// Public endpoint is the concern of the api gateway
+	ops.Post("/", s.registerNewUser)
+	ops.Get("/", s.getUserInfo)
+	ops.Patch("/", s.editUserInfo)
+	ops.Delete("/", s.deleteUser)
+
+	return ops
 }
