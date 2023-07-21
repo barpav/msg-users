@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/barpav/msg-users/internal/rest/models"
@@ -11,6 +12,7 @@ import (
 
 type Service struct {
 	Shutdown chan struct{}
+	cfg      *Config
 	server   *http.Server
 	auth     Authenticator
 	storage  Storage
@@ -26,10 +28,13 @@ type Storage interface {
 }
 
 func (s *Service) Start(auth Authenticator, storage Storage) {
+	s.cfg = &Config{}
+	s.cfg.Read()
+
 	s.auth, s.storage = auth, storage
 
 	s.server = &http.Server{
-		Addr:    ":8080",
+		Addr:    fmt.Sprintf(":%s", s.cfg.port),
 		Handler: s.operations(),
 	}
 
