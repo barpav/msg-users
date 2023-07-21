@@ -1,5 +1,5 @@
 up:
-	sudo docker-compose up -d
+	sudo docker-compose up -d --wait
 	sudo docker ps
 down:
 	sudo docker-compose down
@@ -12,6 +12,19 @@ stop-s:
 	sudo docker stop msg-storage-users-v1
 	sudo docker rm msg-storage-users-v1
 	sudo docker ps
+
+up-debug:
+	sudo docker-compose -f compose-debug.yaml up -d --wait
+down-debug:
+	sudo docker-compose -f compose-debug.yaml down
+
+new-user:
+	curl -v -X POST	-H "Content-Type: application/vnd.newUser.v1+json" -d '{"id": "jane", "name": "Jane Doe", "password": "My1stGoodPassword"}'	localhost:8080
+new-session:
+	curl -v -X POST -H "Authorization: Basic amFuZTpNeTFzdEdvb2RQYXNzd29yZA==" localhost:8081
+# make get-info KEY=session-key 
+get-info:
+	curl -v -H "Authorization: Bearer $(KEY)" -H "Accept: application/vnd.userInfo.v1+json" localhost:8080
 
 build-u:
 	sudo docker image rm -f ghcr.io/barpav/msg-users:v1
