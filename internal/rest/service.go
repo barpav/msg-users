@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/barpav/msg-users/internal/rest/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 )
@@ -11,15 +12,21 @@ import (
 type Service struct {
 	Shutdown chan struct{}
 	server   *http.Server
+	auth     Authenticator
 	storage  Storage
+}
+
+type Authenticator interface {
+	ValidateSession(ctx context.Context, key, ip, agent string) (userId string, err error)
 }
 
 type Storage interface {
 	CreateUser(ctx context.Context, id, name, password string) error
+	UserInfo(ctx context.Context, id string) (*models.UserInfoV1, error)
 }
 
-func (s *Service) Start(storage Storage) {
-	s.storage = storage
+func (s *Service) Start(auth Authenticator, storage Storage) {
+	s.auth, s.storage = auth, storage
 
 	s.server = &http.Server{
 		Addr:    ":8080",
@@ -48,6 +55,7 @@ func (s *Service) operations() *chi.Mux {
 	ops := chi.NewRouter()
 
 	ops.Use(s.traceInternalServerError)
+	ops.Use(s.authenticate)
 
 	// Public endpoint is the concern of the api gateway
 	ops.Post("/", s.registerNewUser)
