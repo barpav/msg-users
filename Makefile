@@ -35,6 +35,12 @@ edit-info:
 	-H "Content-Type: application/vnd.userProfileCommon.v1+json" \
 	-d '{"name": "$(NAME)"}' \
 	localhost:8080
+# make change-pass KEY=session-key OLD=OldPassword NEW=NewPassword
+change-pass:
+	curl -v -X PATCH -H "Authorization: Bearer $(KEY)" \
+	-H "Content-Type: application/vnd.userProfilePassword.v1+json" \
+	-d '{"current": "$(OLD)", "new": "$(NEW)"}' \
+	localhost:8080
 
 build-u:
 	sudo docker image rm -f ghcr.io/barpav/msg-users:v1

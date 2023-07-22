@@ -47,5 +47,35 @@ func (s *Service) editCommonProfileInfoV1(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Service) changePasswordV1(w http.ResponseWriter, r *http.Request) {
+	passwords := models.UserProfilePasswordV1{}
+	err := passwords.Deserialize(r.Body)
 
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	userId, ctx := authenticatedUser(r), r.Context()
+	var currentIsValid bool
+	currentIsValid, err = s.storage.ValidateCredentials(ctx, userId, passwords.Current)
+
+	if err == nil {
+		if !currentIsValid {
+			http.Error(w, "Invalid current user password.", 400)
+			return
+		}
+
+		err = s.storage.ChangePassword(ctx, userId, passwords.New)
+	}
+
+	if err != nil {
+		log.Err(err).Msg(fmt.Sprintf("Failed to change user '%s' password (issue: %s).",
+			userId, requestId(r)))
+
+		addIssueHeader(w, r)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

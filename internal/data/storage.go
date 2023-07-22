@@ -27,6 +27,7 @@ func queriesToPrepare() []query {
 		queryCreateUser{},
 		queryGetUserInfo{},
 		queryUpdateCommonProfileInfoV1{},
+		queryChangePassword{},
 	}
 }
 
