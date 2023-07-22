@@ -7,19 +7,20 @@ import (
 	"github.com/barpav/msg-users/internal/rest/models"
 )
 
-type queryGetUserInfo struct{}
+type queryGetUserInfoV1 struct{}
 
-func (q queryGetUserInfo) text() string {
+func (q queryGetUserInfoV1) text() string {
 	return `
-	SELECT name AS name,
-	coalesce(picture, '') AS picture 
+	SELECT
+		name AS name,
+		COALESCE(picture, '') AS picture 
 	FROM users
 	WHERE id = $1;
 	`
 }
 
-func (s *Storage) UserInfo(ctx context.Context, id string) (info *models.UserInfoV1, err error) {
-	row := s.queries[queryGetUserInfo{}].QueryRowContext(ctx, id)
+func (s *Storage) UserInfoV1(ctx context.Context, id string) (info *models.UserInfoV1, err error) {
+	row := s.queries[queryGetUserInfoV1{}].QueryRowContext(ctx, id)
 
 	info = &models.UserInfoV1{}
 	err = row.Scan(&info.Name, &info.Picture)

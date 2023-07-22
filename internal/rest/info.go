@@ -10,6 +10,7 @@ import (
 
 const mimeTypeUserInfoV1 = "application/vnd.userInfo.v1+json"
 
+// https://barpav.github.io/msg-api-spec/#/users/get_users
 func (s *Service) getUserInfo(w http.ResponseWriter, r *http.Request) {
 	switch r.Header.Get("Accept") {
 	case "", mimeTypeUserInfoV1: // including if not specified
@@ -27,7 +28,7 @@ func (s *Service) getUserInfoV1(w http.ResponseWriter, r *http.Request) {
 		userId = authenticatedUser(r)
 	}
 
-	info, err := s.storage.UserInfo(r.Context(), userId)
+	info, err := s.storage.UserInfoV1(r.Context(), userId)
 
 	if err == nil {
 		if info == nil {
