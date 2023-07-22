@@ -29,7 +29,6 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 	err := userInfo.Deserialize(r.Body)
 
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		http.Error(w, err.Error(), 400)
 		return
 	}
@@ -42,7 +41,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Err(err).Msg(fmt.Sprintf("User registration failed (issue: %s).", r.Header.Get("request-id")))
+		log.Err(err).Msg(fmt.Sprintf("User registration failed (issue: %s).", requestId(r)))
 
 		addIssueHeader(w, r)
 		w.WriteHeader(http.StatusInternalServerError)

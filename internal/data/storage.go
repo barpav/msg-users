@@ -25,7 +25,7 @@ func queriesToPrepare() []query {
 	return []query{
 		queryValidateCredentials{},
 		queryCreateUser{},
-		queryGetUserInfo{},
+		queryGetUserInfoV1{},
 		queryUpdateCommonProfileInfoV1{},
 		queryChangePassword{},
 	}
