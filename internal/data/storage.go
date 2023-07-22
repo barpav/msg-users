@@ -26,6 +26,8 @@ func queriesToPrepare() []query {
 		queryValidateCredentials{},
 		queryCreateUser{},
 		queryGetUserInfo{},
+		queryUpdateCommonProfileInfoV1{},
+		queryChangePassword{},
 	}
 }
 
@@ -47,7 +49,9 @@ func (s *Storage) Close(ctx context.Context) (err error) {
 
 	go func() {
 		for _, stmt := range s.queries {
-			err = errors.Join(err, stmt.Close())
+			if stmt != nil {
+				err = errors.Join(err, stmt.Close())
+			}
 		}
 
 		err = errors.Join(err, s.db.Close())

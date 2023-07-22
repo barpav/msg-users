@@ -25,6 +25,10 @@ type Authenticator interface {
 type Storage interface {
 	CreateUser(ctx context.Context, id, name, password string) error
 	UserInfo(ctx context.Context, id string) (*models.UserInfoV1, error)
+	UpdateCommonProfileInfoV1(ctx context.Context, userId string, info *models.UserProfileCommonV1) error
+	ChangePassword(ctx context.Context, userId, newPassword string) error
+
+	ValidateCredentials(ctx context.Context, userId, password string) (valid bool, err error)
 }
 
 func (s *Service) Start(auth Authenticator, storage Storage) {
