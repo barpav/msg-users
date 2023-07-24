@@ -27,6 +27,9 @@ type Storage interface {
 	UserInfoV1(ctx context.Context, id string) (*models.UserInfoV1, error)
 	UpdateCommonProfileInfoV1(ctx context.Context, userId string, info *models.UserProfileCommonV1) error
 	ChangePassword(ctx context.Context, userId, newPassword string) error
+	GenerateUserDeletionCode(ctx context.Context, userId string) (code string, err error)
+	ValidateUserDeletionCode(ctx context.Context, userId string, code string) (valid bool, err error)
+	DeleteUser(ctx context.Context, userId string) error
 
 	ValidateCredentials(ctx context.Context, userId, password string) (valid bool, err error)
 }

@@ -19,7 +19,7 @@ func (q queryCreateUser) text() string {
 
 type ErrUserAlreadyExists struct{}
 
-func (s Storage) CreateUser(ctx context.Context, id, name, password string) (err error) {
+func (s *Storage) CreateUser(ctx context.Context, id, name, password string) (err error) {
 	passwordSum := md5.Sum([]byte(password))
 
 	_, err = s.queries[queryCreateUser{}].ExecContext(ctx, id, name, passwordSum[:])

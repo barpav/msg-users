@@ -18,11 +18,11 @@ up-debug:
 down-debug:
 	sudo docker-compose -f compose-debug.yaml down
 
-new-user:
+user:
 	curl -v -X POST	-H "Content-Type: application/vnd.newUser.v1+json" \
 	-d '{"id": "jane", "name": "Jane Doe", "password": "My1stGoodPassword"}' \
 	localhost:8080
-new-session:
+session:
 	curl -v -X POST -H "Authorization: Basic amFuZTpNeTFzdEdvb2RQYXNzd29yZA==" localhost:8081
 # make get-info KEY=session-key 
 get-info:
@@ -41,6 +41,11 @@ change-pass:
 	-H "Content-Type: application/vnd.userProfilePassword.v1+json" \
 	-d '{"current": "$(OLD)", "new": "$(NEW)"}' \
 	localhost:8080
+delete-user:
+	curl -v -X DELETE -H "Authorization: Basic amFuZTpNeTFzdEdvb2RQYXNzd29yZA==" localhost:8080
+# make delete-user-conf CODE=confirmation-code
+delete-user-conf:
+	curl -v -X DELETE -H "Authorization: Basic amFuZTpNeTFzdEdvb2RQYXNzd29yZA==" localhost:8080?confirmation-code=$(CODE)
 
 build-u:
 	sudo docker image rm -f ghcr.io/barpav/msg-users:v1

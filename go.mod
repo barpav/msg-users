@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/barpav/msg-sessions v0.0.0-20230721121831-6e24efd350d4
 	github.com/go-chi/chi/v5 v5.0.10
+	github.com/google/uuid v1.3.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.3.1
 	github.com/rs/zerolog v1.29.1

@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,11 +13,8 @@ func (s *Service) traceInternalServerError(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				err := errors.New(fmt.Sprintf("Recovered from panic: %v", rec))
-				log.Err(err).Msg(fmt.Sprintf("Internal server error (issue: %s).", requestId(r)))
-
-				addIssueHeader(w, r)
-				w.WriteHeader(http.StatusInternalServerError)
+				err := fmt.Errorf("Recovered form panic: %v", rec)
+				logAndReturnErrorWithIssue(w, r, err, "Internal server error")
 			}
 		}()
 
@@ -26,8 +22,77 @@ func (s *Service) traceInternalServerError(next http.Handler) http.Handler {
 	})
 }
 
-func addIssueHeader(w http.ResponseWriter, r *http.Request) {
-	w.Header()["issue"] = []string{requestId(r)} // lowercase - non-canonical (vendor) header
+type authenticatedUserId struct{}
+
+func (s *Service) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			next.ServeHTTP(w, r) // authentication not required (user registration)
+		case http.MethodDelete:
+			s.authenticateByCredentials(w, r, next)
+		default:
+			s.authenticateBySessionKey(w, r, next)
+		}
+	})
+}
+
+func (s *Service) authenticateBySessionKey(w http.ResponseWriter, r *http.Request, next http.Handler) {
+	var userId string
+	var err error
+	sessionKey := sessionKey(r)
+
+	if sessionKey != "" {
+		userId, err = s.auth.ValidateSession(r.Context(), sessionKey, userIP(r), userAgent(r))
+	}
+
+	if err != nil {
+		logAndReturnErrorWithIssue(w, r, err, "Session key authentication failed")
+		return
+	}
+
+	if userId == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), authenticatedUserId{}, userId)
+
+	next.ServeHTTP(w, r.WithContext(ctx))
+}
+
+func (s *Service) authenticateByCredentials(w http.ResponseWriter, r *http.Request, next http.Handler) {
+	var authenticated bool
+	var err error
+
+	userId, password, parsed := r.BasicAuth()
+
+	if parsed {
+		authenticated, err = s.storage.ValidateCredentials(r.Context(), userId, password)
+	}
+
+	if err != nil {
+		logAndReturnErrorWithIssue(w, r, err, "Credentials authentication failed")
+		return
+	}
+
+	if !authenticated {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	ctx := context.WithValue(r.Context(), authenticatedUserId{}, userId)
+
+	next.ServeHTTP(w, r.WithContext(ctx))
+}
+
+func logAndReturnErrorWithIssue(w http.ResponseWriter, r *http.Request, err error, logMsg string) {
+	issue := requestId(r)
+
+	log.Err(err).Msg(fmt.Sprintf("Issue %s: %s", issue, logMsg))
+
+	w.Header()["issue"] = []string{issue} // lowercase - non-canonical (vendor) header
+	w.WriteHeader(http.StatusInternalServerError)
 }
 
 func requestId(r *http.Request) string {
@@ -38,41 +103,6 @@ func requestId(r *http.Request) string {
 	}
 
 	return "untraced"
-}
-
-type authenticatedUserId struct{}
-
-func (s *Service) authenticate(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost { // authentication not required
-			next.ServeHTTP(w, r)
-		}
-
-		var userId string
-		var err error
-		sessionKey := sessionKey(r)
-
-		if sessionKey != "" {
-			userId, err = s.auth.ValidateSession(r.Context(), sessionKey, userIP(r), userAgent(r))
-		}
-
-		if err != nil {
-			log.Err(err).Msg(fmt.Sprintf("Authentication failed (issue: %s).", requestId(r)))
-
-			addIssueHeader(w, r)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if userId == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), authenticatedUserId{}, userId)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
 }
 
 func sessionKey(r *http.Request) string {
