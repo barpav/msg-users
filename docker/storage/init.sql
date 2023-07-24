@@ -4,3 +4,8 @@ CREATE TABLE users (
     password bytea NOT NULL,
     picture varchar
 );
+
+CREATE TABLE usr_del_confirm_codes (
+    userId varchar(50) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    code varchar(36) NOT NULL
+);

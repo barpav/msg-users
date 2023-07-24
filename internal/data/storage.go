@@ -28,6 +28,9 @@ func queriesToPrepare() []query {
 		queryGetUserInfoV1{},
 		queryUpdateCommonProfileInfoV1{},
 		queryChangePassword{},
+		queryGenerateUserDeletionCode{},
+		queryValidateUserDeletionCode{},
+		queryDeleteUser{},
 	}
 }
 
