@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/rs/zerolog/log"
 )
 
 const mimeTypeUserInfoV1 = "application/vnd.userInfo.v1+json"
@@ -41,10 +39,7 @@ func (s *Service) getUserInfoV1(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		log.Err(err).Msg(fmt.Sprintf("Failed to get user '%s' info (issue: %s).", userId, requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to get user '%s' info.", userId))
 		return
 	}
 

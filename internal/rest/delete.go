@@ -18,11 +18,8 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 		confirmCode, err = s.storage.GenerateUserDeletionCode(ctx, userId)
 
 		if err != nil {
-			log.Err(err).Msg(fmt.Sprintf("Failed to generate user '%s' deletion confirmation code (issue: %s).",
-				userId, requestId(r)))
-
-			addIssueHeader(w, r)
-			w.WriteHeader(http.StatusInternalServerError)
+			logAndReturnErrorWithIssue(w, r, err,
+				fmt.Sprintf("Failed to generate user '%s' deletion confirmation code.", userId))
 			return
 		}
 
@@ -34,11 +31,8 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 	valid, err = s.storage.ValidateUserDeletionCode(ctx, userId, confirmCode)
 
 	if err != nil {
-		log.Err(err).Msg(fmt.Sprintf("Failed to validate user '%s' deletion confirmation code (issue: %s).",
-			userId, requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err,
+			fmt.Sprintf("Failed to validate user '%s' deletion confirmation code.", userId))
 		return
 	}
 
@@ -50,11 +44,7 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 	err = s.storage.DeleteUser(ctx, userId)
 
 	if err != nil {
-		log.Err(err).Msg(fmt.Sprintf("Failed to delete user '%s' (issue: %s).",
-			userId, requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to delete user '%s'.", userId))
 		return
 	}
 

@@ -41,10 +41,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Err(err).Msg(fmt.Sprintf("User registration failed (issue: %s).", requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err, "User registration failed")
 		return
 	}
 

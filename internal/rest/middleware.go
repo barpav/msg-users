@@ -2,7 +2,6 @@ package rest
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -14,30 +13,13 @@ func (s *Service) traceInternalServerError(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
-				err := errors.New(fmt.Sprintf("Recovered from panic: %v", rec))
-				log.Err(err).Msg(fmt.Sprintf("Internal server error (issue: %s).", requestId(r)))
-
-				addIssueHeader(w, r)
-				w.WriteHeader(http.StatusInternalServerError)
+				err := fmt.Errorf("Recovered form panic: %v", rec)
+				logAndReturnErrorWithIssue(w, r, err, "Internal server error")
 			}
 		}()
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-func addIssueHeader(w http.ResponseWriter, r *http.Request) {
-	w.Header()["issue"] = []string{requestId(r)} // lowercase - non-canonical (vendor) header
-}
-
-func requestId(r *http.Request) string {
-	id := r.Header.Get("request-id") // set by api-gateway
-
-	if id != "" {
-		return id
-	}
-
-	return "untraced"
 }
 
 type authenticatedUserId struct{}
@@ -65,10 +47,7 @@ func (s *Service) authenticateBySessionKey(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err != nil {
-		log.Err(err).Msg(fmt.Sprintf("Session key authentication failed (issue: %s).", requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err, "Session key authentication failed")
 		return
 	}
 
@@ -93,10 +72,7 @@ func (s *Service) authenticateByCredentials(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err != nil {
-		log.Err(err).Msg(fmt.Sprintf("Credentials authentication failed (issue: %s).", requestId(r)))
-
-		addIssueHeader(w, r)
-		w.WriteHeader(http.StatusInternalServerError)
+		logAndReturnErrorWithIssue(w, r, err, "Credentials authentication failed")
 		return
 	}
 
@@ -108,6 +84,25 @@ func (s *Service) authenticateByCredentials(w http.ResponseWriter, r *http.Reque
 	ctx := context.WithValue(r.Context(), authenticatedUserId{}, userId)
 
 	next.ServeHTTP(w, r.WithContext(ctx))
+}
+
+func logAndReturnErrorWithIssue(w http.ResponseWriter, r *http.Request, err error, logMsg string) {
+	issue := requestId(r)
+
+	log.Err(err).Msg(fmt.Sprintf("Issue %s: %s", issue, logMsg))
+
+	w.Header()["issue"] = []string{issue} // lowercase - non-canonical (vendor) header
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
+func requestId(r *http.Request) string {
+	id := r.Header.Get("request-id") // set by api-gateway
+
+	if id != "" {
+		return id
+	}
+
+	return "untraced"
 }
 
 func sessionKey(r *http.Request) string {
