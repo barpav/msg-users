@@ -15,7 +15,7 @@ func (s *Service) Validate(ctx context.Context, credentials *usgrpc.Credentials)
 
 	if err != nil {
 		log.Err(err).Msg(fmt.Sprintf("User '%s' credentials validation failed.", userId))
-		return nil, fmt.Errorf("Credentials validation failed: %w", err)
+		return nil, fmt.Errorf("credentials validation failed: %w", err)
 	}
 
 	if ok {
