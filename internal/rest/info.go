@@ -19,6 +19,16 @@ func (s *Service) getUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type ErrUserNotFound interface {
+	Error() string
+	ImplementsUserNotFoundError()
+}
+
+type ErrUserDeleted interface {
+	Error() string
+	ImplementsUserDeletedError()
+}
+
 func (s *Service) getUserInfoV1(w http.ResponseWriter, r *http.Request) {
 	userId := r.URL.Query().Get("id")
 
@@ -29,16 +39,21 @@ func (s *Service) getUserInfoV1(w http.ResponseWriter, r *http.Request) {
 	info, err := s.storage.UserInfoV1(r.Context(), userId)
 
 	if err == nil {
-		if info == nil {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-
 		w.Header().Set("Content-Type", mimeTypeUserInfoV1)
 		err = json.NewEncoder(w).Encode(info)
 	}
 
 	if err != nil {
+		if _, ok := err.(ErrUserNotFound); ok {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if _, ok := err.(ErrUserDeleted); ok {
+			w.WriteHeader(http.StatusGone)
+			return
+		}
+
 		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to get user '%s' info.", userId))
 		return
 	}

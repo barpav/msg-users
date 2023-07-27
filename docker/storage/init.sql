@@ -9,3 +9,7 @@ CREATE TABLE usr_del_confirm_codes (
     userId varchar(50) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     code varchar(36) NOT NULL
 );
+
+CREATE TABLE deleted_users (
+    id varchar(50) PRIMARY KEY
+);
