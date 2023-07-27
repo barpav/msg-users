@@ -30,7 +30,6 @@ func queriesToPrepare() []query {
 		queryChangePassword{},
 		queryGenerateUserDeletionCode{},
 		queryValidateUserDeletionCode{},
-		queryDeleteUser{},
 	}
 }
 
