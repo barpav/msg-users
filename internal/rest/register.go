@@ -19,9 +19,9 @@ func (s *Service) registerNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type ErrUserAlreadyExists interface {
+type ErrUserIdAlreadyExists interface {
 	Error() string
-	ImplementsUserAlreadyExistsError()
+	ImplementsUserIdAlreadyExistsError()
 }
 
 func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func (s *Service) registerNewUserV1(w http.ResponseWriter, r *http.Request) {
 	err = s.storage.CreateUser(r.Context(), userInfo.Id, userInfo.Name, userInfo.Password)
 
 	if err != nil {
-		if _, ok := err.(ErrUserAlreadyExists); ok {
+		if _, ok := err.(ErrUserIdAlreadyExists); ok {
 			w.WriteHeader(http.StatusConflict)
 			return
 		}
