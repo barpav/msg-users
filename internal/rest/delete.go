@@ -41,6 +41,13 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = s.auth.EndAllSessions(ctx, userId)
+
+	if err != nil {
+		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to end user '%s' sessions before deletion.", userId))
+		return
+	}
+
 	err = s.storage.DeleteUser(ctx, userId)
 
 	if err != nil {
