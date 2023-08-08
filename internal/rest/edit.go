@@ -15,7 +15,7 @@ func (s *Service) editUserInfo(w http.ResponseWriter, r *http.Request) {
 	case "application/vnd.userProfilePassword.v1+json":
 		s.changePasswordV1(w, r)
 	default:
-		http.Error(w, "Unsupported profile data (invalid media type).", 400)
+		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
 }
