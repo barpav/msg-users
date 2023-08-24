@@ -1,9 +1,11 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
+	"github.com/barpav/msg-users/internal/rest/models"
 	"github.com/rs/zerolog/log"
 )
 
@@ -41,6 +43,14 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var info *models.UserInfoV1
+	info, err = s.storage.UserInfoV1(ctx, userId)
+
+	if err != nil {
+		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to get user '%s' info before deletion.", userId))
+		return
+	}
+
 	err = s.auth.EndAllSessions(ctx, userId)
 
 	if err != nil {
@@ -56,6 +66,16 @@ func (s *Service) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Info().Msg(fmt.Sprintf("User '%s' deleted.", userId))
+
+	if info.Picture != "" {
+		go func() {
+			err = s.fileStats.SendUsage(context.Background(), info.Picture, false)
+
+			if err != nil {
+				log.Err(err).Msg(fmt.Sprintf("Failed to send unused file '%s' statistics.", info.Picture))
+			}
+		}()
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
