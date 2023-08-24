@@ -21,8 +21,12 @@ func (m *UserProfileCommonV1) Deserialize(data io.Reader) error {
 }
 
 func (m *UserProfileCommonV1) validate() (err error) {
-	if nLen := len([]rune(m.Name)); nLen < 1 || nLen > 150 {
-		err = errors.New("User name must be between 1 and 150 characters.")
+	if len([]rune(m.Name)) > 150 {
+		err = errors.Join(err, errors.New("User name must be between 1 and 150 characters."))
+	}
+
+	if m.Picture != "" && len(m.Picture) != 24 {
+		err = errors.Join(err, errors.New("User profile picture must be 24-character file id."))
 	}
 
 	return err

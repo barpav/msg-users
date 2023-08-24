@@ -29,11 +29,11 @@ get-info:
 	curl -v -H "Authorization: Bearer $(KEY)" \
 	-H "Accept: application/vnd.userInfo.v1+json" \
 	localhost:8080
-# make edit-info KEY=session-key NAME="New name"
+# make edit-info KEY=session-key NAME="New name" PIC=file-id
 edit-info:
 	curl -v -X PATCH -H "Authorization: Bearer $(KEY)" \
 	-H "Content-Type: application/vnd.userProfileCommon.v1+json" \
-	-d '{"name": "$(NAME)"}' \
+	-d '{"name": "$(NAME)", "picture": "$(PIC)"}' \
 	localhost:8080
 # make change-pass KEY=session-key OLD=OldPassword NEW=NewPassword
 change-pass:
