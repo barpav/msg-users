@@ -11,11 +11,12 @@ import (
 )
 
 type Service struct {
-	Shutdown chan struct{}
-	cfg      *Config
-	server   *http.Server
-	auth     Authenticator
-	storage  Storage
+	Shutdown  chan struct{}
+	cfg       *Config
+	server    *http.Server
+	auth      Authenticator
+	storage   Storage
+	fileStats FileStats
 }
 
 type Authenticator interface {
@@ -26,7 +27,7 @@ type Authenticator interface {
 type Storage interface {
 	CreateUser(ctx context.Context, id, name, password string) error
 	UserInfoV1(ctx context.Context, id string) (*models.UserInfoV1, error)
-	UpdateCommonProfileInfoV1(ctx context.Context, userId string, info *models.UserProfileCommonV1) error
+	UpdateCommonProfileInfoV1(ctx context.Context, userId string, info *models.UserProfileCommonV1) (oldPic string, err error)
 	ChangePassword(ctx context.Context, userId, newPassword string) error
 	GenerateUserDeletionCode(ctx context.Context, userId string) (code string, err error)
 	ValidateUserDeletionCode(ctx context.Context, userId string, code string) (valid bool, err error)
@@ -35,11 +36,15 @@ type Storage interface {
 	ValidateCredentials(ctx context.Context, userId, password string) (valid bool, err error)
 }
 
-func (s *Service) Start(auth Authenticator, storage Storage) {
+type FileStats interface {
+	SendUsage(ctx context.Context, fileId string, inUse bool) error
+}
+
+func (s *Service) Start(auth Authenticator, storage Storage, fileStats FileStats) {
 	s.cfg = &Config{}
 	s.cfg.Read()
 
-	s.auth, s.storage = auth, storage
+	s.auth, s.storage, s.fileStats = auth, storage, fileStats
 
 	s.server = &http.Server{
 		Addr:    fmt.Sprintf(":%s", s.cfg.port),

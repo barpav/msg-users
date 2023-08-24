@@ -9,12 +9,15 @@ services:
     environment:
       - MSG_STORAGE_HOST=storage-users-v1
       - MSG_SESSIONS_HOST=sessions-v1
+      - MSG_FILES_STAT_HOST=broker
     expose:
       - 9000
     ports:
       - 8080:8080
     depends_on:
       storage-users-v1:
+        condition: service_healthy
+      broker:
         condition: service_healthy
 
   storage-users-v1:
@@ -59,3 +62,19 @@ services:
       interval: 1s
       timeout: 2s
       retries: 5
+  
+  broker:
+    image: rabbitmq:3.9.29-alpine
+    container_name: msg-broker
+    expose:
+      - 5672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1G
