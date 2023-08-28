@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/barpav/msg-files v0.0.0-20230823092627-010fd099199c
-	github.com/barpav/msg-sessions v0.0.0-20230729162901-f8c9132b6abe
+	github.com/barpav/msg-sessions v0.0.0-20230828114848-7c2857180271
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa

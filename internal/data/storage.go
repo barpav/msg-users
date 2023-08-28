@@ -47,26 +47,33 @@ func (s *Storage) Open() (err error) {
 }
 
 func (s *Storage) Close(ctx context.Context) (err error) {
+	var closeErr error
 	closed := make(chan struct{}, 1)
 
 	go func() {
 		for _, stmt := range s.queries {
 			if stmt != nil {
-				err = errors.Join(err, stmt.Close())
+				closeErr = errors.Join(err, stmt.Close())
 			}
 		}
 
-		err = errors.Join(err, s.db.Close())
+		closeErr = errors.Join(err, s.db.Close())
 
 		closed <- struct{}{}
 	}()
 
 	select {
 	case <-closed:
-		return err
+		err = closeErr
 	case <-ctx.Done():
-		return ctx.Err()
+		err = ctx.Err()
 	}
+
+	if err != nil {
+		err = fmt.Errorf("failed to disconnect from database: %w", err)
+	}
+
+	return err
 }
 
 func (s *Storage) connectToDatabase() (err error) {
