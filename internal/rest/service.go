@@ -24,6 +24,7 @@ type Authenticator interface {
 	EndAllSessions(ctx context.Context, userId string) error
 }
 
+//go:generate mockery --name Storage
 type Storage interface {
 	CreateUser(ctx context.Context, id, name, password string) error
 	UserInfoV1(ctx context.Context, id string) (*models.UserInfoV1, error)
