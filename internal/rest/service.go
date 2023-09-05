@@ -19,6 +19,7 @@ type Service struct {
 	fileStats FileStats
 }
 
+//go:generate mockery --name Authenticator
 type Authenticator interface {
 	ValidateSession(ctx context.Context, key, ip, agent string) (userId string, err error)
 	EndAllSessions(ctx context.Context, userId string) error
