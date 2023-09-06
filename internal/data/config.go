@@ -18,7 +18,7 @@ const (
 	envVarPassword = "MSG_STORAGE_PASSWORD"
 )
 
-type Config struct {
+type config struct {
 	host     string
 	port     string
 	database string
@@ -26,7 +26,7 @@ type Config struct {
 	password string
 }
 
-func (c *Config) Read() {
+func (c *config) Read() {
 	readSetting(envVarHost, defaultHost, &c.host)
 	readSetting(envVarPort, defaultPort, &c.port)
 	readSetting(envVarDatabase, defaultDatabase, &c.database)

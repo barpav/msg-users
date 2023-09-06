@@ -13,7 +13,7 @@ import (
 
 type Storage struct {
 	db      *sql.DB
-	cfg     *Config
+	cfg     *config
 	queries map[query]*sql.Stmt
 }
 
@@ -34,7 +34,7 @@ func queriesToPrepare() []query {
 }
 
 func (s *Storage) Open() (err error) {
-	s.cfg = &Config{}
+	s.cfg = &config{}
 	s.cfg.Read()
 
 	err = s.connectToDatabase()
