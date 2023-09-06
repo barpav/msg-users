@@ -12,7 +12,7 @@ import (
 
 type Service struct {
 	Shutdown  chan struct{}
-	cfg       *Config
+	cfg       *config
 	server    *http.Server
 	auth      Authenticator
 	storage   Storage
@@ -43,7 +43,7 @@ type FileStats interface {
 }
 
 func (s *Service) Start(auth Authenticator, storage Storage, fileStats FileStats) {
-	s.cfg = &Config{}
+	s.cfg = &config{}
 	s.cfg.Read()
 
 	s.auth, s.storage, s.fileStats = auth, storage, fileStats
