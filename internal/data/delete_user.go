@@ -5,6 +5,22 @@ import (
 	"database/sql"
 )
 
+type queryDeleteUser struct{}
+
+func (q queryDeleteUser) text() string {
+	return `
+	DELETE FROM users WHERE id = $1;
+	`
+}
+
+type queryReserveDeletedUserId struct{}
+
+func (q queryReserveDeletedUserId) text() string {
+	return `
+	INSERT INTO deleted_users (id) VALUES ($1);
+	`
+}
+
 func (s *Storage) DeleteUser(ctx context.Context, userId string) (err error) {
 	var tx *sql.Tx
 	tx, err = s.db.BeginTx(ctx, nil)
@@ -15,13 +31,13 @@ func (s *Storage) DeleteUser(ctx context.Context, userId string) (err error) {
 
 	defer tx.Rollback()
 
-	_, err = tx.ExecContext(ctx, "DELETE FROM users WHERE id = $1;", userId)
+	_, err = tx.Stmt(s.queries[queryDeleteUser{}]).ExecContext(ctx, userId)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.ExecContext(ctx, "INSERT INTO deleted_users (id) VALUES ($1);", userId)
+	_, err = tx.Stmt(s.queries[queryReserveDeletedUserId{}]).ExecContext(ctx, userId)
 
 	if err != nil {
 		return err
