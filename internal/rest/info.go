@@ -57,6 +57,4 @@ func (s *Service) getUserInfoV1(w http.ResponseWriter, r *http.Request) {
 		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to get user '%s' info.", userId))
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

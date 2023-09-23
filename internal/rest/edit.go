@@ -43,8 +43,6 @@ func (s *Service) editCommonProfileInfoV1(w http.ResponseWriter, r *http.Request
 	}
 
 	go s.sendFileUsageStats(context.Background(), oldPic, info.Picture)
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Service) changePasswordV1(w http.ResponseWriter, r *http.Request) {
@@ -73,8 +71,6 @@ func (s *Service) changePasswordV1(w http.ResponseWriter, r *http.Request) {
 		logAndReturnErrorWithIssue(w, r, err, fmt.Sprintf("Failed to change user '%s' password.", userId))
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Service) sendFileUsageStats(ctx context.Context, oldFile, newFile string) {
