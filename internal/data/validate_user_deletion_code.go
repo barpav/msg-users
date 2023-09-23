@@ -21,5 +21,13 @@ func (s *Storage) ValidateUserDeletionCode(ctx context.Context, userId string, c
 
 	defer rows.Close()
 
-	return rows.Next(), nil
+	valid = rows.Next()
+
+	err = rows.Err()
+
+	if err != nil {
+		return false, err
+	}
+
+	return valid, nil
 }

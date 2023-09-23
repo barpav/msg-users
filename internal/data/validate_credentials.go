@@ -26,5 +26,13 @@ func (s *Storage) ValidateCredentials(ctx context.Context, userId, password stri
 
 	defer rows.Close()
 
-	return rows.Next(), nil
+	valid = rows.Next()
+
+	err = rows.Err()
+
+	if err != nil {
+		return false, err
+	}
+
+	return valid, nil
 }
